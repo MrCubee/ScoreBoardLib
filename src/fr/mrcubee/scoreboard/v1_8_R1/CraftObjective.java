@@ -130,6 +130,7 @@ public class CraftObjective extends Objective {
         Reflection.setValue(packet, "b", this.getName());
         Reflection.setValue(packet, "c", value);
         Reflection.setValue(packet, "d", EnumScoreboardAction.CHANGE);
+        ((CraftPlayer) player).getHandle().playerConnection.sendPacket(packet);
     }
 
     private void updateScores(Player player) {
