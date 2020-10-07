@@ -6,6 +6,7 @@ import fr.mrcubee.scoreboard.ObjectiveLocation;
 import fr.mrcubee.util.Reflection;
 import net.minecraft.server.v1_16_R1.*;
 import org.bukkit.craftbukkit.v1_16_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_16_R1.util.CraftChatMessage;
 import org.bukkit.entity.Player;
 
 public class CraftObjective extends Objective {
@@ -70,7 +71,7 @@ public class CraftObjective extends Objective {
             return;
         packet = new PacketPlayOutScoreboardObjective();
         Reflection.setValue(packet, "a", this.getName());
-        Reflection.setValue(packet, "b", this.getDisplayName());
+        Reflection.setValue(packet, "b", CraftChatMessage.fromStringOrNull(this.getDisplayName()));
         Reflection.setValue(packet, "c",
                 IScoreboardCriteria.EnumScoreboardHealthDisplay.values()[this.getObjectiveFormat().ordinal()]);
         Reflection.setValue(packet, "d", 1);
@@ -85,7 +86,7 @@ public class CraftObjective extends Objective {
             return;
         packet = new PacketPlayOutScoreboardObjective();
         Reflection.setValue(packet, "a", this.getName());
-        Reflection.setValue(packet, "b", this.getDisplayName());
+        Reflection.setValue(packet, "b", CraftChatMessage.fromStringOrNull(this.getDisplayName()));
         Reflection.setValue(packet, "c",
                 IScoreboardCriteria.EnumScoreboardHealthDisplay.values()[this.getObjectiveFormat().ordinal()]);
         Reflection.setValue(packet, "d", 0);
@@ -113,7 +114,7 @@ public class CraftObjective extends Objective {
             return;
         packet = new PacketPlayOutScoreboardObjective();
         Reflection.setValue(packet, "a", this.getName());
-        Reflection.setValue(packet, "b", this.getDisplayName());
+        Reflection.setValue(packet, "b", CraftChatMessage.fromStringOrNull(this.getDisplayName()));
         Reflection.setValue(packet, "c",
                 IScoreboardCriteria.EnumScoreboardHealthDisplay.values()[this.getObjectiveFormat().ordinal()]);
         Reflection.setValue(packet, "d", 2);
