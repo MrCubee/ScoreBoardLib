@@ -1,4 +1,6 @@
 out/
 .idea/
 target/
+src/fr/mrcubee/Main.java
+resource/
 **.iml
