@@ -10,10 +10,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class CustomSideBar {
 
     private Objective objective;
+    private Map<Integer, Integer> hashs;
     private Map<Integer, String> lines;
 
     protected CustomSideBar(String name, String displayName) {
         this.objective = Objective.create(name, displayName);
+        this.hashs = new HashMap<Integer, Integer>();
         this.lines = new HashMap<Integer, String>();
     }
 
@@ -24,9 +26,14 @@ public class CustomSideBar {
     public boolean setLine(int number, String line) {
         if (line == null)
             return false;
-        if (this.lines.containsKey(number))
+        else if (this.hashs.containsKey(number) && this.hashs.get(number) == line.hashCode())
+            return true;
+        if (this.lines.containsKey(number)) {
             this.objective.removeScore(this.lines.remove(number));
+            this.hashs.remove(number);
+        }
         this.lines.put(number, line);
+        this.hashs.put(number, line.hashCode());
         return this.objective.setScore(line, number);
     }
 
@@ -37,6 +44,7 @@ public class CustomSideBar {
     public boolean removeLine(int number) {
         String line = this.lines.remove(number);
 
+        this.hashs.remove(number);
         if (line == null)
             return false;
         return this.objective.removeScore(line);
