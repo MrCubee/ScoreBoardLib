@@ -2,15 +2,18 @@ package fr.mrcubee.scoreboard;
 
 public class Score {
 
+    private final Objective objective;
     private final String playerName;
     private int score;
 
-    protected Score(String playerName, int score) {
+    protected Score(Objective objective, String playerName, int score) {
+        this.objective = objective;
         this.playerName = playerName;
         this.score = score;
     }
 
-    protected Score(String playerName) {
+    protected Score(Objective objective, String playerName) {
+        this.objective = objective;
         this.playerName = playerName;
         this.score = 0;
     }
@@ -21,6 +24,7 @@ public class Score {
 
     public void setScore(int score) {
         this.score = score;
+        this.objective.updateScores(false);
     }
 
     public void removeScore(int score) {
@@ -35,9 +39,7 @@ public class Score {
         return playerName;
     }
 
-    public static Score create(String playerName, int score) {
-        if (playerName == null)
-            return null;
-        return new Score(playerName, score);
+    public Objective getObjective() {
+        return objective;
     }
 }

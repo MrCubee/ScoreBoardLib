@@ -17,8 +17,8 @@ public abstract class Objective {
     private String displayName;
     private ObjectiveFormat objectiveFormat;
     private ObjectiveLocation location;
-    private ConcurrentLinkedQueue<OfflinePlayer> receivers;
-    private ConcurrentLinkedQueue<Score> scores;
+    private final ConcurrentLinkedQueue<OfflinePlayer> receivers;
+    private final ConcurrentLinkedQueue<Score> scores;
 
     protected Objective(String name, String displayName) {
         this.originName = name;
@@ -155,7 +155,7 @@ public abstract class Objective {
         if (score != null)
             score.setScore(value);
         else {
-            score = Score.create(playerName, value);
+            score = new Score(this, playerName, value);
             this.scores.add(score);
         }
         return true;

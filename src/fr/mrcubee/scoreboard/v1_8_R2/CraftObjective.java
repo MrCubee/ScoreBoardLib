@@ -4,10 +4,7 @@ import fr.mrcubee.scoreboard.Objective;
 import fr.mrcubee.scoreboard.ObjectiveFormat;
 import fr.mrcubee.scoreboard.ObjectiveLocation;
 import fr.mrcubee.util.Reflection;
-import net.minecraft.server.v1_8_R2.PacketPlayOutScoreboardScore;
-import net.minecraft.server.v1_8_R2.IScoreboardCriteria;
-import net.minecraft.server.v1_8_R2.PacketPlayOutScoreboardDisplayObjective;
-import net.minecraft.server.v1_8_R2.PacketPlayOutScoreboardObjective;
+import net.minecraft.server.v1_8_R2.*;
 import org.bukkit.craftbukkit.v1_8_R2.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
