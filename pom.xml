@@ -111,7 +111,7 @@
 
     <build>
         <defaultGoal>clean install</defaultGoal>
-        <finalName>ScoreBoardLib</finalName>
+        <finalName>${project.name}</finalName>
         <sourceDirectory>src</sourceDirectory>
         <plugins>
             <plugin>
