@@ -113,32 +113,7 @@
         <defaultGoal>clean install</defaultGoal>
         <finalName>ScoreBoardLib</finalName>
         <sourceDirectory>src</sourceDirectory>
-        <resources>
-            <resource>
-                <directory>resource</directory>
-            </resource>
-        </resources>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <version>1.4.1</version>
-                <executions>
-                    <execution>
-                        <id>enforce</id>
-                        <configuration>
-                            <rules>
-                                <dependencyConvergence>
-                                    <uniqueVersions>false</uniqueVersions>
-                                </dependencyConvergence>
-                            </rules>
-                        </configuration>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
