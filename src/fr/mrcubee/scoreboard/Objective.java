@@ -1,16 +1,21 @@
 package fr.mrcubee.scoreboard;
 
-import fr.mrcubee.util.MinecraftVersion;
+import fr.mrcubee.bukkit.packet.GenericPacketPlayOutScoreboardDisplayObjective;
+import fr.mrcubee.bukkit.packet.GenericPacketPlayOutScoreboardObjective;
+import fr.mrcubee.bukkit.packet.GenericPacketPlayOutScoreboardScore;
+import fr.mrcubee.bukkit.scoreboard.ObjectiveAction;
+import fr.mrcubee.bukkit.scoreboard.ObjectiveFormat;
+import fr.mrcubee.bukkit.scoreboard.ObjectiveLocation;
+import fr.mrcubee.bukkit.scoreboard.ScoreAction;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
-import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
-public abstract class Objective {
+public class Objective {
 
     private final String originName;
     private String name;
@@ -20,55 +25,13 @@ public abstract class Objective {
     private final ConcurrentLinkedQueue<OfflinePlayer> receivers;
     private final ConcurrentLinkedQueue<Score> scores;
 
-    protected Objective(String name, String displayName) {
+    private Objective(String name, String displayName) {
         this.originName = name;
         this.name = name;
         this.displayName = displayName;
         this.objectiveFormat = ObjectiveFormat.INTEGER;
         this.location = ObjectiveLocation.SIDEBAR;
-        this.receivers = new ConcurrentLinkedQueue<OfflinePlayer>() {
-            @Override
-            public boolean add(OfflinePlayer offlinePlayer) {
-                if (offlinePlayer == null || !offlinePlayer.isOnline())
-                    return false;
-                init(offlinePlayer.getPlayer());
-                return super.add(offlinePlayer);
-            }
-
-            @Override
-            public boolean addAll(Collection<? extends OfflinePlayer> collection) {
-                if (collection == null)
-                    return false;
-                collection.stream().forEach(this::add);
-                return true;
-            }
-
-            @Override
-            public OfflinePlayer remove() {
-                OfflinePlayer offlinePlayer = super.remove();
-
-                if (offlinePlayer.isOnline())
-                    Objective.this.remove(offlinePlayer.getPlayer());
-                return offlinePlayer;
-            }
-
-            @Override
-            public boolean remove(Object o) {
-                if (!super.remove(o))
-                    return false;
-                if (o instanceof OfflinePlayer)
-                    Objective.this.remove(((OfflinePlayer) o).getPlayer());
-                return true;
-            }
-
-            @Override
-            public boolean removeAll(Collection<?> collection) {
-                if (collection == null)
-                    return false;
-                collection.stream().forEach(this::remove);
-                return true;
-            }
-        };
+        this.receivers = new MemberLinkedQueue(this);
         this.scores = new ConcurrentLinkedQueue<Score>() {
             @Override
             public boolean add(Score score) {
@@ -106,6 +69,7 @@ public abstract class Objective {
         if (displayName == null)
             return false;
         this.displayName = displayName;
+        updateScores(false);
         return true;
     }
 
@@ -114,11 +78,12 @@ public abstract class Objective {
     }
 
     protected ConcurrentLinkedQueue<Score> getScores() {
-        return scores;
+        return this.scores;
     }
 
     public void setObjectiveFormat(ObjectiveFormat objectiveFormat) {
         this.objectiveFormat = (objectiveFormat != null) ? objectiveFormat : ObjectiveFormat.INTEGER;
+        updateScores(false);
     }
 
     public ObjectiveFormat getObjectiveFormat() {
@@ -129,6 +94,7 @@ public abstract class Objective {
 
     public void setLocation(ObjectiveLocation location) {
         this.location = (location != null) ? location : ObjectiveLocation.SIDEBAR;
+        updateScores(false);
     }
 
     public ObjectiveLocation getLocation() {
@@ -158,10 +124,12 @@ public abstract class Objective {
             score = new Score(this, playerName, value);
             this.scores.add(score);
         }
+        this.getReceivers().forEach(offlinePlayer -> updateScore(offlinePlayer.getPlayer(), playerName, value));
         return true;
     }
 
     public boolean removeScore(String playerName) {
+        GenericPacketPlayOutScoreboardScore packet;
         Score score;
 
         if (playerName == null)
@@ -170,6 +138,14 @@ public abstract class Objective {
         if (score == null)
             return false;
         this.scores.remove(score);
+        packet = GenericPacketPlayOutScoreboardScore.create();
+        if (packet == null)
+            return true;
+        packet.setObjectiveName(this.name);
+        packet.setPlayerName(playerName);
+        packet.setScoreValue(0);
+        packet.setScoreAction(ScoreAction.REMOVE);
+        this.getReceivers().forEach(offlinePlayer -> packet.sendPlayer(offlinePlayer.getPlayer()));
         return true;
     }
 
@@ -182,25 +158,113 @@ public abstract class Objective {
         return null;
     }
 
-    protected abstract void create(Player player);
-    protected abstract void remove(Player player);
-    protected abstract void displayTo(Player player, ObjectiveLocation objectiveLocation);
-    protected abstract void update(Player player);
-    protected abstract void updateScores(boolean force);
-    
+    protected void create(Player player) {
+        GenericPacketPlayOutScoreboardObjective packet;
+
+        if (player == null)
+            return;
+        packet = GenericPacketPlayOutScoreboardObjective.create();
+        if (packet == null)
+            return;
+        packet.setObjectiveName(this.name);
+        packet.setObjectiveDisplayName(this.displayName);
+        packet.setObjectiveFormat(this.objectiveFormat);
+        packet.setAction(ObjectiveAction.CREATE);
+        remove(player);
+        packet.sendPlayer(player);
+    }
+
+    protected void remove(Player player) {
+        GenericPacketPlayOutScoreboardObjective packet;
+
+        if (player == null)
+            return;
+        packet = GenericPacketPlayOutScoreboardObjective.create();
+        if (packet == null)
+            return;
+        packet.setObjectiveName(this.name);
+        packet.setObjectiveDisplayName(this.displayName);
+        packet.setObjectiveFormat(this.objectiveFormat);
+        packet.setAction(ObjectiveAction.REMOVE);
+        packet.sendPlayer(player);
+    }
+
+    protected void displayTo(Player player, ObjectiveLocation objectiveLocation) {
+        GenericPacketPlayOutScoreboardDisplayObjective packet;
+
+        if (player == null || objectiveLocation == null)
+            return;
+        packet = GenericPacketPlayOutScoreboardDisplayObjective.create();
+        if (packet == null)
+            return;
+        packet.setObjectiveName(this.name);
+        packet.setObjectiveLocation(objectiveLocation);
+        packet.sendPlayer(player);
+    }
+
+    protected void update(Player player) {
+        GenericPacketPlayOutScoreboardObjective packet;
+
+        if (player == null)
+            return;
+        packet = GenericPacketPlayOutScoreboardObjective.create();
+        if (packet == null)
+            return;
+        packet.setObjectiveName(this.name);
+        packet.setObjectiveDisplayName(this.displayName);
+        packet.setObjectiveFormat(this.objectiveFormat);
+        packet.setAction(ObjectiveAction.UPDATE);
+        packet.sendPlayer(player);
+    }
+
+    private void updateScore(Player player, String playerName, int value) {
+        GenericPacketPlayOutScoreboardScore packet;
+
+        if (player == null || playerName == null)
+            return;
+        packet = GenericPacketPlayOutScoreboardScore.create();
+        if (packet == null)
+            return;
+        packet.setPlayerName(playerName);
+        packet.setObjectiveName(this.name);
+        packet.setScoreValue(value);
+        packet.setScoreAction(ScoreAction.CHANGE);
+        packet.sendPlayer(player);
+    }
+
+    public void updateScores(Player player) {
+        if (player == null)
+            return;
+        this.getScores().forEach(score -> updateScore(player, score.getPlayerName(), score.getScore()));
+    }
+
+    public void updateScores(boolean force) {
+        GenericPacketPlayOutScoreboardObjective packet = GenericPacketPlayOutScoreboardObjective.create();
+        String old;
+
+        if (packet == null)
+            return;
+        if (force) {
+            old = toggleName();
+            packet.setObjectiveName(old);
+            packet.setObjectiveDisplayName(this.displayName);
+            packet.setObjectiveFormat(this.objectiveFormat);
+            packet.setAction(ObjectiveAction.REMOVE);
+            getReceivers().forEach(offlinePlayer -> {
+                Player player = offlinePlayer.getPlayer();
+
+                if (player != null) {
+                    create(player);
+                    updateScores(player);
+                    displayTo(player, this.getLocation());
+                    packet.sendPlayer(player);
+                }
+            });
+        } else
+            this.getReceivers().forEach(offlinePlayer -> updateScores(offlinePlayer.getPlayer()));
+    }
+
     public static Objective create(String name, String displayName) {
-        String nmsVersion;
-        Class<? extends Objective> objectiveClass;
-        Constructor<? extends Objective> constructor;
-        
-        if (name == null || displayName == null)
-            return null;
-        nmsVersion = MinecraftVersion.getNMSVersion();
-        try {
-            objectiveClass = (Class<? extends Objective>) Class.forName("fr.mrcubee.scoreboard." + nmsVersion + ".CraftObjective");
-            constructor = objectiveClass.getConstructor(String.class, String.class);
-            return constructor.newInstance(name, displayName);
-        } catch (Exception ignored) {}
-        return null;
+        return new Objective(name, displayName);
     }
 }

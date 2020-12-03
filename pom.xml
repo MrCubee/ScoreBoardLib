@@ -42,6 +42,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>fr.mrcubee.minecraft.library</groupId>
+            <artifactId>packets</artifactId>
+            <version>1.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>org.spigotmc...........</groupId>
             <artifactId>spigot-api</artifactId>
             <version>1.7.10-R0.1-SNAPSHOT</version>
