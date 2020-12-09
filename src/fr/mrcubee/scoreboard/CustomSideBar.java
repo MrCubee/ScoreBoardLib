@@ -3,8 +3,8 @@ package fr.mrcubee.scoreboard;
 import org.bukkit.OfflinePlayer;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class CustomSideBar {
@@ -16,8 +16,8 @@ public class CustomSideBar {
 
     protected CustomSideBar(String name, String displayName) {
         this.objective = Objective.create(name, displayName);
-        this.hash = new HashMap<Integer, Integer>();
-        this.lines = new HashMap<Integer, String>();
+        this.hash = new ConcurrentHashMap<Integer, Integer>();
+        this.lines = new ConcurrentHashMap<Integer, String>();
         this.oldSize = 0;
     }
 
