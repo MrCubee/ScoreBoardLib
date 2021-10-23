@@ -19,8 +19,8 @@
 
     <distributionManagement>
         <repository>
-            <id>arkadgames-public</id>
-            <url>http://nexus.arkadgames.net/repository/minecraft/</url>
+            <id>mrcubee-public</id>
+            <url>http://nexus.mrcubee.net/repository/minecraft/</url>
             <uniqueVersion>false</uniqueVersion>
         </repository>
     </distributionManagement>
@@ -35,8 +35,8 @@
 
     <repositories>
         <repository>
-            <id>arkadgames-public</id>
-            <url>http://nexus.arkadgames.net/repository/minecraft/</url>
+            <id>mrcubee-public</id>
+            <url>http://nexus.mrcubee.net/repository/minecraft/</url>
         </repository>
     </repositories>
 
