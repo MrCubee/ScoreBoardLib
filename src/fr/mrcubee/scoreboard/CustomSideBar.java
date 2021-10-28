@@ -64,8 +64,8 @@ public class CustomSideBar {
             for (String line : lines)
                 setLine(size--, line);
         }
-        for (int i = currentSize + 1; i <= this.oldSize; i++)
-            removeLine(i);
+        for (int i = currentSize; i < this.oldSize; i++)
+            removeLine(i - currentSize);
         this.oldSize = currentSize;
     }
 
